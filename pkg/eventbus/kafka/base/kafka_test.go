@@ -18,8 +18,9 @@ func TestBrokers(t *testing.T) {
 	kafka := NewKafka(config, logger)
 
 	expectedBrokers := []string{"broker1:9092", "broker2:9092"}
-	actualBrokers := kafka.Brokers()
+	actualBrokers, err := kafka.Brokers()
 
+	assert.NoError(t, err)
 	assert.Equal(t, expectedBrokers, actualBrokers)
 }
 

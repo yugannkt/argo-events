@@ -26,8 +26,20 @@ func NewKafka(config *v1alpha1.KafkaBus, logger *zap.SugaredLogger) *Kafka {
 	}
 }
 
-func (k *Kafka) Brokers() []string {
-	return strings.Split(k.config.URL, ",")
+// GetURL returns the Kafka URL, resolving it from a secret if URLSecret is specified.
+func (k *Kafka) GetURL() (string, error) {
+	if k.config.URLSecret != nil {
+		return sharedutil.GetSecretFromVolume(k.config.URLSecret)
+	}
+	return k.config.URL, nil
+}
+
+func (k *Kafka) Brokers() ([]string, error) {
+	url, err := k.GetURL()
+	if err != nil {
+		return nil, err
+	}
+	return strings.Split(url, ","), nil
 }
 
 func (k *Kafka) Config() (*sarama.Config, error) {

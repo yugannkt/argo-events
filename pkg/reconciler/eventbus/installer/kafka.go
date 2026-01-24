@@ -29,6 +29,15 @@ func (i *exoticKafkaInstaller) Install(ctx context.Context) (*v1alpha1.BusConfig
 	if kafkaObj == nil {
 		return nil, fmt.Errorf("invalid request")
 	}
+	// Validate that either URL or URLSecret is provided, but not both
+	hasURL := kafkaObj.URL != ""
+	hasURLSecret := kafkaObj.URLSecret != nil
+	if !hasURL && !hasURLSecret {
+		return nil, fmt.Errorf("either url or urlSecret must be specified for Kafka EventBus")
+	}
+	if hasURL && hasURLSecret {
+		return nil, fmt.Errorf("url and urlSecret are mutually exclusive, only one can be specified")
+	}
 	if kafkaObj.Topic == "" {
 		kafkaObj.Topic = fmt.Sprintf("%s-%s", i.eventBus.Namespace, i.eventBus.Name)
 	}
